@@ -11,8 +11,8 @@ namespace TicTacToe
     {
         protected string[,] board;
         private string player;
-        private Bot bot = new Bot("O", 0);
-        protected int turn = 0;
+        private Bot bot;
+        protected int turn;
         private void changePlayer()
         {
             if (player == "O")
@@ -37,7 +37,7 @@ namespace TicTacToe
                 Console.Write("\n\n");
             }
         }
-        private bool isMoveValid(string move)
+        private bool isMoveValid(string move, string[,] TestBoard)
         {
             int moveInt;
             bool isValid = int.TryParse(move,out moveInt);
@@ -45,11 +45,11 @@ namespace TicTacToe
             {
                 if(moveInt>0 && moveInt < 10)
                 {
-                    for (int i = 0; i < board.GetLength(0); i++)
+                    for (int i = 0; i < TestBoard.GetLength(0); i++)
                     {
-                        for(int j = 0;j< board.GetLength(1); j++)
+                        for(int j = 0;j< TestBoard.GetLength(1); j++)
                         {
-                            if (board[i, j] == move)
+                            if (TestBoard[i, j] == move)
                             {
                                 return true;
                             }
@@ -63,7 +63,7 @@ namespace TicTacToe
         }
         private void makeMove(string move)
         {
-            if (isMoveValid(move))
+            if (isMoveValid(move,this.board))
             {
                 for (int i = 0; i < board.GetLength(0); i++)
                 {
@@ -83,6 +83,7 @@ namespace TicTacToe
         }
         private void resetBoard()
         {
+            this.turn = 0;
             player = "X";
             for (int i = 0; i < board.GetLength(0); i++)
             {
@@ -92,19 +93,19 @@ namespace TicTacToe
                 }
             }
         }
-        private bool checkState()
+        protected bool checkState(string[,] TestBoard)
         {
             changePlayer();
             bool state = false;
             int HorCnt;
             int VerCnt;
-            for (int i = 0; i < board.GetLength(0); i++)
+            for (int i = 0; i < TestBoard.GetLength(0); i++)
             {
                 VerCnt = 0;
                 HorCnt = 0;
-                for (int j = 0; j < board.GetLength(1); j++)
+                for (int j = 0; j < TestBoard.GetLength(1); j++)
                 {
-                    if (board[i, j] == this.player)
+                    if (TestBoard[i, j] == this.player)
                     {
                         VerCnt++;
                     }
@@ -113,7 +114,7 @@ namespace TicTacToe
                         VerCnt--;
                     }
 
-                    if (board[j,i] == this.player)
+                    if (TestBoard[j,i] == this.player)
                     {
                         HorCnt++;
                     }
@@ -133,11 +134,11 @@ namespace TicTacToe
                 }
             }
 
-            if (board[0,0] == board[1,1] && board[1,1] == board[2, 2])
+            if (TestBoard[0,0] == TestBoard[1,1] && TestBoard[1,1] == TestBoard[2, 2])
             {
                 state = true;
             }
-            if (board[2, 0] == board[1, 1] && board[1, 1] == board[0, 2])
+            if (TestBoard[2, 0] == TestBoard[1, 1] && TestBoard[1, 1] == TestBoard[0, 2])
             {
                 state = true;
             }
@@ -149,7 +150,7 @@ namespace TicTacToe
             Console.Clear();
             showBoard();
             changePlayer();
-            if (IsDraw())
+            if (IsDraw(this.board))
             {
                 Console.WriteLine("It's a draw :(");
             }
@@ -161,14 +162,14 @@ namespace TicTacToe
         }
         
 
-        private bool IsDraw()
+        protected bool IsDraw(string[,] TestBoard)
         {
             int cnt = 0;
-            for (int i = 0; i < board.GetLength(0); i++)
+            for (int i = 0; i < TestBoard.GetLength(0); i++)
             {
-                for (int j = 0; j < board.GetLength(1); j++)
+                for (int j = 0; j < TestBoard.GetLength(1); j++)
                 {
-                    if (isMoveValid(board[i, j]))
+                    if (isMoveValid(TestBoard[i, j], TestBoard))
                     {
                         cnt++;
                     }
@@ -185,6 +186,7 @@ namespace TicTacToe
         {
             player = "X";
             board = new string[3, 3];
+            this.turn = 0;
             for(int i = 0;i<board.GetLength(0);i++)
             {
                 for(int j = 0;j < board.GetLength(1); j++)
@@ -195,16 +197,20 @@ namespace TicTacToe
         }
         public void play()
         {
+            this.bot = new Bot("O", 4);
             bool ValidMove = true;
             string move = "";
             bool IsBot = false;
-            while (!checkState())
+            
+            while (!checkState(this.board))
             {
-                if(this.player == "O")
+                bot.board = this.board;
+                bot.turn = this.turn;
+                if (this.player == "O")
                 {
                     IsBot = true;
                 }
-                if (IsDraw())
+                if (IsDraw(this.board))
                 {
                     break;
                 }
@@ -219,14 +225,14 @@ namespace TicTacToe
                 else
                 {
                     move = bot.GetMove().ToString();
-                    while (!isMoveValid(move))
+                    while (!isMoveValid(move, this.board))
                     {
                         move = bot.GetMove().ToString();
                     }
                     IsBot = false;
                 }
 
-                if (isMoveValid(move))
+                if (isMoveValid(move,this.board))
                 {
                     makeMove(move);
                     ValidMove = true;
