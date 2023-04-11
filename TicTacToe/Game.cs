@@ -9,9 +9,10 @@ namespace TicTacToe
 {
     class Game
     {
-        private string[,] board;
+        protected string[,] board;
         private string player;
         private Bot bot = new Bot("O", 0);
+        protected int turn = 0;
         private void changePlayer()
         {
             if (player == "O")
@@ -62,7 +63,6 @@ namespace TicTacToe
         }
         private void makeMove(string move)
         {
-            int moveInt;
             if (isMoveValid(move))
             {
                 for (int i = 0; i < board.GetLength(0); i++)
@@ -72,6 +72,7 @@ namespace TicTacToe
                         if (board[i, j] == move)
                         {
                             board[i,j] = player;
+                            this.turn += 1;
                             changePlayer();
                         }
                     }
